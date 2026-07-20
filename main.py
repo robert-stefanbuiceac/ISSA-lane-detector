@@ -37,7 +37,19 @@ while True:
     cv2.fillConvexPoly(matrice_de_zero, margini_trapez, 1)
 
     drum=resized_frame*matrice_de_zero
-    cv2.imshow('Original', drum)
+
+    s_upper_left=(0,0)
+    s_upper_right=(int(new_width),0)
+    s_lower_left=(0,int(new_height))
+    s_lower_right=(int(new_width),int(new_height))
+    margini_ecran=np.array([s_upper_right,s_upper_left,s_lower_left,s_lower_right],dtype=np.int32)
+
+    margini_trapez=np.float32(margini_trapez)
+    margini_ecran=np.float32(margini_ecran)
+
+    magic_matrix=cv2.getPerspectiveTransform(margini_trapez,margini_ecran)
+    stretched_image=cv2.warpPerspective(drum,magic_matrix,(new_width,new_height))
+    cv2.imshow('Original', stretched_image)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
