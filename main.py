@@ -50,7 +50,21 @@ while True:
     magic_matrix=cv2.getPerspectiveTransform(margini_trapez,margini_ecran)
     stretched_image=cv2.warpPerspective(drum,magic_matrix,(new_width,new_height))
     blurred_image=cv2.blur(stretched_image,(5,5))
-    cv2.imshow('Original', stretched_image)
+
+    sobel_vertical=np.float32([[-1,-2,-1],
+                              [0,0,0],
+                              [+1,+2,+1]])
+    sobel_horizontal=np.transpose(sobel_vertical)
+
+    blurred_image=np.float32(blurred_image)
+    filtru_v=cv2.filter2D(blurred_image,-1,sobel_vertical)
+    filtru_h=cv2.filter2D(blurred_image,-1,sobel_horizontal)
+
+    #frame_de_afisat_filtru_h=cv2.convertScaleAbs(filtru_h)
+    #frame_de_afisat_filtru_v=cv2.convertScaleAbs(filtru_v)
+    filtru_final=np.sqrt(filtru_h**2+filtru_v**2)
+    filtru_de_afisat=cv2.convertScaleAbs(filtru_final)
+    cv2.imshow('Original', filtru_de_afisat)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
