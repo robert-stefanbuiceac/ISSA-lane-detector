@@ -1,5 +1,5 @@
 import cv2
-
+import numpy as np
 
 cam = cv2.VideoCapture('Lane Detection Test Video 01.mp4')
 
@@ -22,9 +22,22 @@ while True:
     height,width=frame.shape[:2]
     new_height=int(height/3)
     new_width=int(width/3)
+
     resized_frame = cv2.resize(frame,(new_width,new_height))
+
     resized_frame=cv2.cvtColor(resized_frame,cv2.COLOR_BGR2GRAY)
-    cv2.imshow('Original', resized_frame)
+
+    upper_left=(int(new_width*0.45),int(new_height*0.76))
+    upper_right=(int(new_width*0.55),int(new_height*0.76))
+    lower_left=(0,new_height)
+    lower_right=(new_width,new_height)
+
+    margini_trapez=np.array([upper_right,upper_left,lower_left,lower_right],dtype=np.int32)
+    matrice_de_zero=np.zeros((new_height,new_width),dtype=np.uint8)
+    cv2.fillConvexPoly(matrice_de_zero, margini_trapez, 1)
+
+    drum=resized_frame*matrice_de_zero
+    cv2.imshow('Original', drum)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
