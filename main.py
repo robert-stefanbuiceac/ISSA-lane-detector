@@ -49,6 +49,7 @@ while True:
 
     magic_matrix=cv2.getPerspectiveTransform(margini_trapez,margini_ecran)
     stretched_image=cv2.warpPerspective(drum,magic_matrix,(new_width,new_height))
+    blurred_image=cv2.blur(stretched_image,(5,5))
     cv2.imshow('Original', stretched_image)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
