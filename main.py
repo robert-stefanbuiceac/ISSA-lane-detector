@@ -19,7 +19,11 @@ while True:
     if not ret:
         break
 
-    cv2.imshow('Original', frame)
+    height,width=frame.shape[:2]
+    new_height=int(height/3)
+    new_width=int(width/3)
+    resized_frame = cv2.resize(frame,(new_width,new_height))
+    cv2.imshow('Original', resized_frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
