@@ -64,8 +64,10 @@ while True:
     #frame_de_afisat_filtru_v=cv2.convertScaleAbs(filtru_v)
     filtru_final=np.sqrt(filtru_h**2+filtru_v**2)
     filtru_de_afisat=cv2.convertScaleAbs(filtru_final)
-    cv2.imshow('Original', filtru_de_afisat)
+    threshold = int(255 / 2)
+    _, binarized_frame = cv2.threshold(filtru_de_afisat, threshold, 255, cv2.THRESH_BINARY)
 
+    cv2.imshow('Original', binarized_frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
