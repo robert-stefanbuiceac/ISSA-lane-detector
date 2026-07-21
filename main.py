@@ -1,3 +1,5 @@
+from pickletools import uint8
+
 import cv2
 import numpy as np
 
@@ -31,7 +33,7 @@ while True:
 
     resized_frame = cv2.resize(frame,(new_width,new_height))
 
-    resized_frame=cv2.cvtColor(resized_frame,cv2.COLOR_BGR2GRAY)
+    gray_frame=cv2.cvtColor(resized_frame,cv2.COLOR_BGR2GRAY)
 
     upper_left=(int(new_width*0.45),int(new_height*0.76))
     upper_right=(int(new_width*0.55),int(new_height*0.76))
@@ -42,7 +44,7 @@ while True:
     matrice_de_zero=np.zeros((new_height,new_width),dtype=np.uint8)
     cv2.fillConvexPoly(matrice_de_zero, margini_trapez, 1)
 
-    drum=resized_frame*matrice_de_zero
+    drum=gray_frame*matrice_de_zero
 
     s_upper_left=(0,0)
     s_upper_right=(int(new_width),0)
@@ -110,7 +112,27 @@ while True:
     cv2.line(binarized_frame,last_left_top,last_left_bottom,(100,0,0),5)
     cv2.line(binarized_frame,last_right_top,last_right_bottom,(200,0,0),5)
 
-    cv2.imshow('Original', binarized_frame)
+
+    blank_frame_left=np.zeros((new_height,new_width),dtype=np.uint8)
+    cv2.line(blank_frame_left,last_left_top,last_left_bottom,(255,0,0),3)
+    magic_matrix_inverse=cv2.getPerspectiveTransform(margini_ecran,margini_trapez)
+    warped_left=cv2.warpPerspective(blank_frame_left,magic_matrix_inverse,(new_width,new_height))
+    pct_stanga = np.argwhere(warped_left > 0)
+
+    blank_frame_right = np.zeros((new_height, new_width), dtype=np.uint8)
+    cv2.line(blank_frame_right, last_right_top, last_right_bottom, (255,0,0), 3)
+    warped_right = cv2.warpPerspective(blank_frame_right, magic_matrix_inverse, (new_width, new_height))
+    pct_dreapta = np.argwhere(warped_right > 0)
+
+    final_frame=resized_frame.copy()
+
+    if len(final_frame.shape) == 2:
+        final_frame = cv2.cvtColor(final_frame, cv2.COLOR_GRAY2BGR)
+    if len(pct_stanga) > 0:
+        final_frame[pct_stanga[:, 0], pct_stanga[:, 1]] = [50, 50, 250]
+    if len(pct_dreapta) > 0:
+        final_frame[pct_dreapta[:, 0], pct_dreapta[:, 1]] = [50, 250, 50]
+    cv2.imshow('Lane Detection Final', final_frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
