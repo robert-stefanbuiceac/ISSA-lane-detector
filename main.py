@@ -1,6 +1,12 @@
 import cv2
 import numpy as np
 
+
+last_left_top = (0, 0)
+last_left_bottom = (0, 0)
+last_right_top = (0, 0)
+last_right_bottom = (0, 0)
+
 cam = cv2.VideoCapture('Lane Detection Test Video 01.mp4')
 
 while True:
@@ -66,6 +72,43 @@ while True:
     filtru_de_afisat=cv2.convertScaleAbs(filtru_final)
     threshold = int(255 / 2)
     _, binarized_frame = cv2.threshold(filtru_de_afisat, threshold, 255, cv2.THRESH_BINARY)
+
+    copie=binarized_frame.copy()
+    copie[:,:(int(new_width*0.05))]=0
+    copie[:,-(int(new_width*0.05)):]=0
+
+    half_width=new_width//2
+    left_half=copie[:,:half_width]
+    right_half=copie[:,half_width:]
+
+    left_points=np.argwhere(left_half>0)
+    right_points=np.argwhere(right_half>0)
+
+    left_xs = left_points[:, 1] if len(left_points) > 0 else np.array([])
+    left_ys = left_points[:, 0] if len(left_points) > 0 else np.array([])
+    right_xs = right_points[:, 1] + half_width if len(right_points) > 0 else np.array([])
+    right_ys = right_points[:, 0] if len(right_points) > 0 else np.array([])
+
+    if len(left_xs) > 0 and len(left_ys) > 0:
+        dreapta_st = np.polynomial.polynomial.polyfit(left_xs, left_ys, deg=1)
+        if dreapta_st[1] != 0:
+            top_x = int((0 - dreapta_st[0]) / dreapta_st[1])
+            bottom_x = int((new_height - dreapta_st[0]) / dreapta_st[1])
+            if 0 <= top_x <= half_width and 0 <= bottom_x <= half_width:
+                last_left_top = (top_x, 0)
+                last_left_bottom = (bottom_x, new_height)
+
+    if len(right_xs) > 0 and len(right_ys) > 0:
+        dreapta_dr = np.polynomial.polynomial.polyfit(right_xs, right_ys, deg=1)
+        if dreapta_dr[1] != 0:
+            top_x = int((0 - dreapta_dr[0]) / dreapta_dr[1])
+            bottom_x = int((new_height - dreapta_dr[0]) / dreapta_dr[1])
+            if half_width <= top_x <= new_width and half_width <= bottom_x <= new_width:
+                last_right_top = (top_x, 0)
+                last_right_bottom = (bottom_x, new_height)
+
+    cv2.line(binarized_frame,last_left_top,last_left_bottom,(100,0,0),5)
+    cv2.line(binarized_frame,last_right_top,last_right_bottom,(200,0,0),5)
 
     cv2.imshow('Original', binarized_frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
