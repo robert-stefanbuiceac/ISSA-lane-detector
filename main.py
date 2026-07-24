@@ -3,18 +3,18 @@ from pickletools import uint8
 import cv2
 import numpy as np
 
+import object_socket
 
+ip='127.0.0.1'
+port=5000
 last_left_top = (0, 0)
 last_left_bottom = (0, 0)
 last_right_top = (0, 0)
 last_right_bottom = (0, 0)
-
-cam = cv2.VideoCapture('Lane Detection Test Video 01.mp4')
+receiver=object_socket.ObjectReceiverSocket(ip,port,print_when_connecting_to_sender=True,print_when_receiving_object=False)
 
 while True:
-
-    ret, frame = cam.read()
-
+    ret, frame = receiver.recv_object()
     # ret (bool): Return code of the `read` operation. Did we get an image or not?
     #             (if not maybe the camera is not detected/connected etc.)
 
@@ -24,7 +24,7 @@ while True:
     #                Each element is 0-255.
     #                You can slice it, reassign elements to change pixels, etc.
 
-    if not ret:
+    if not ret or frame is None:
         break
 
     height,width=frame.shape[:2]
@@ -136,5 +136,5 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-cam.release()
+receiver.close()
 cv2.destroyAllWindows()
